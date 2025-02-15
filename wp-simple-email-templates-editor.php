@@ -63,7 +63,7 @@ function wp_simple_email_templates_editor_register_edit_email_templates() {
 	add_settings_section(
 		'wp_simple_email_templates_editor_email_section',
 		'Email Templates',
-		function() { echo '<p>Configure the email messages sent to users.</p><p>The following variables can be used in email subjects.</p><ul><li>{user_login}</li><li>{site_title}</li></ul><p>The following variables can be used in welcome email body.</p><ul><li>{user_login}</li><li>{user_email}</li><li>{login_url}</li><li>{home_url}</li><li>{profile_url}</li><li>{site_title}</li></ul><p>The following variables can be used in reset password email body.</p><ul><li>{user_login}</li><li>{user_email}</li><li>{login_url}</li><li>{home_url}</li><li>{profile_url}</li><li>{site_title}</li><li>{resetpass_url}</li><li>{user_ip}</li></ul>'; },
+		function() { echo '<p>Configure the email messages sent to users.</p><p>The following variables can be used in email subjects.</p><ul><li>{user_login}</li><li>{site_title}</li></ul><p>The following variables can be used in welcome email body.</p><ul><li>{user_login}</li><li>{user_email}</li><li>{login_url}</li><li>{home_url}</li>'; if (function_exists('bp_members_get_user_url')) { echo '<li>{profile_url}</li>';} echo '<li>{site_title}</li></ul><p>The following variables can be used in reset password email body.</p><ul><li>{user_login}</li><li>{user_email}</li><li>{login_url}</li><li>{home_url}</li>'; if (function_exists('bp_members_get_user_url')) { echo '<li>{profile_url}</li>';} echo '<li>{site_title}</li><li>{resetpass_url}</li><li>{user_ip}</li></ul>'; },
 		'wp-simple-email-templates-editor-edit-email-templates'
 	);
 	add_settings_field(
@@ -118,7 +118,9 @@ function wp_simple_email_templates_editor_replace_welcome_email($user_id) {
 	$user = get_userdata($user_id);
 	$login_url = wp_login_url();
 	$home_url = home_url();
-	$profile_url = bp_members_get_user_url($user_id);
+	if (function_exists('bp_members_get_user_url')) {
+		$profile_url = bp_members_get_user_url($user_id);
+	}
 	$site_title = get_bloginfo('name');
 	$subject = get_option('wp_simple_email_templates_editor_welcome_email_subject', '[{site_title}] Welcome {user_login}!');
 	$subject = str_replace(
@@ -128,10 +130,13 @@ function wp_simple_email_templates_editor_replace_welcome_email($user_id) {
 	);
 	$body = get_option('wp_simple_email_templates_editor_welcome_email_body', "Hi {user_login},\n\nThank you for registering!\n\nRegards,\n{site_title}");
 	$body = str_replace(
-		array('{user_login}', '{user_email}', '{login_url}', '{home_url}', '{profile_url}', '{site_title}'),
-		array($user->user_login, $user->user_email, $login_url, $home_url, $profile_url, $site_title),
+		array('{user_login}', '{user_email}', '{login_url}', '{home_url}', '{site_title}'),
+		array($user->user_login, $user->user_email, $login_url, $home_url, $site_title),
 		$body
 	);
+	if (isset($profile_url)) {
+		$body = str_replace('{profile_url}', $profile_url, $body);
+	}
 	wp_mail($user->user_email, $subject, $body);
 }
 add_action('user_register', 'wp_simple_email_templates_editor_replace_welcome_email');
@@ -140,7 +145,9 @@ add_action('user_register', 'wp_simple_email_templates_editor_replace_welcome_em
 function wp_simple_email_templates_editor_replace_reset_password_email_body($message, $key, $user_login, $user_data) {
 	$login_url = wp_login_url();
 	$home_url = home_url();
-	$profile_url = bp_members_get_user_url($user_data->ID);
+	if (function_exists('bp_members_get_user_url')) {
+		$profile_url = bp_members_get_user_url($user_data->ID);
+	}
 	$site_title = get_bloginfo('name');
 	$resetpass_url = add_query_arg(
 		array(
@@ -153,10 +160,13 @@ function wp_simple_email_templates_editor_replace_reset_password_email_body($mes
 	$user_ip = wp_simple_email_templates_editor_get_client_ip();
 	$body = get_option('wp_simple_email_templates_editor_reset_password_email_body', "Hi {user_login},\n\nClick the link below to reset your password:\n{resetpass_url}\n\nRegards,\n{site_title}");
 	$body = str_replace(
-		array('{user_login}', '{user_email}', '{login_url}', '{home_url}', '{profile_url}', '{site_title}', '{resetpass_url}', '{user_ip}'),
-		array($user_login, $user_data->user_email, $login_url, $home_url, $profile_url, $site_title, $resetpass_url, $user_ip),
+		array('{user_login}', '{user_email}', '{login_url}', '{home_url}', '{site_title}', '{resetpass_url}', '{user_ip}'),
+		array($user_login, $user_data->user_email, $login_url, $home_url, $site_title, $resetpass_url, $user_ip),
 		$body
 	);
+	if (isset($profile_url)) {
+		$body = str_replace('{profile_url}', $profile_url, $body);
+	}
 	return $body;
 }
 add_filter('retrieve_password_message', 'wp_simple_email_templates_editor_replace_reset_password_email_body', 10, 4);

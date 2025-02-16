@@ -183,3 +183,80 @@ function wp_simple_email_templates_editor_replace_reset_password_email_subject($
 	return $subject;
 }
 add_filter('retrieve_password_title', 'wp_simple_email_templates_editor_replace_reset_password_email_subject', 10, 3);
+
+// Page for deactivation
+function wp_simple_email_templates_editor_deactivate_page() {
+    if (!current_user_can('manage_options')) {
+        return;
+    }
+	if (isset($_POST['wp_simple_email_templates_editor_deactivate_confirm']) && check_admin_referer('wp_simple_email_templates_editor_deactivate_confirm', 'wp_simple_email_templates_editor_deactivate_confirm_nonce')) {
+		if ($_POST['wp_simple_email_templates_editor_deactivate_confirm'] === 'remove') {
+			update_option('wp_simple_email_templates_editor_uninstall_settings', 'remove');
+		}
+		else {
+			update_option('wp_simple_email_templates_editor_uninstall_settings', 'keep');
+		}
+		deactivate_plugins(plugin_basename(__FILE__));
+		wp_safe_redirect(admin_url('plugins.php?deactivated=true'));
+		exit;
+	}
+	?>
+	<div class="wrap">
+		<h2>Deactivate Simple Email Templates Editor Plugin</h2>
+		<form method="post">
+			<?php wp_nonce_field('wp_simple_email_templates_editor_deactivate_confirm', 'wp_simple_email_templates_editor_deactivate_confirm_nonce'); ?>
+			<p>Do you want to remove all settings of this plugin when uninstalling?</p>
+			<p>
+				<label>
+					<input type="radio" name="wp_simple_email_templates_editor_deactivate_confirm" value="keep" checked />
+					Leave settings (default)
+				</label>
+			</p>
+			<p>
+				<label>
+					<input type="radio" name="wp_simple_email_templates_editor_deactivate_confirm" value="remove" />
+					Remove all settings
+				</label>
+			</p>
+			<p>
+				<input type="submit" class="button button-primary" value="Deactivate" />
+			</p>
+		</form>
+	</div>
+	<?php
+	exit;
+}
+
+// Intercept deactivation request and redirect to confirmation screen
+function wp_simple_email_templates_editor_deactivate_hook() {
+    if (isset($_GET['action']) && $_GET['action'] === 'deactivate' && isset($_GET['plugin']) && $_GET['plugin'] === plugin_basename(__FILE__)) {
+        wp_safe_redirect(admin_url('admin.php?page=wp-simple-email-templates-editor-deactivate'));
+        exit;
+    }
+}
+add_action('admin_init', 'wp_simple_email_templates_editor_deactivate_hook');
+
+// Add deactivation confirmation page to the admin menu
+function wp_simple_email_templates_editor_add_deactivate_page() {
+    add_submenu_page(
+        null, // No parent menu, hidden page
+        'Deactivate Simple Email Templates Editor Plugin',
+        'Deactivate Simple Email Templates Editor Plugin',
+        'manage_options',
+        'wp-simple-email-templates-editor-deactivate',
+        'wp_simple_email_templates_editor_deactivate_page'
+    );
+}
+add_action('admin_menu', 'wp_simple_email_templates_editor_add_deactivate_page');
+
+// Remove all settings when uninstalling if specified
+function wp_simple_email_templates_editor_uninstall() {
+	if (get_option('wp_simple_email_templates_editor_uninstall_settings') === 'remove') {
+		delete_option('wp_simple_email_templates_editor_welcome_email_subject');
+		delete_option('wp_simple_email_templates_editor_welcome_email_body');
+		delete_option('wp_simple_email_templates_editor_reset_password_email_subject');
+		delete_option('wp_simple_email_templates_editor_reset_password_email_body');
+		delete_option('wp_simple_email_templates_editor_uninstall_settings');
+	}
+}
+register_uninstall_hook(__FILE__, 'wp_simple_email_templates_editor_uninstall');

@@ -56,10 +56,22 @@ function wp_simple_email_templates_editor_edit_email_templates_page_screen() {
 
 // Register settings
 function wp_simple_email_templates_editor_register_edit_email_templates() {
-	register_setting('wp_simple_email_templates_editor_edit_email_templates', 'wp_simple_email_templates_editor_welcome_email_subject', ['default' => '[{site_title}] Welcome {user_login}']);
-	register_setting('wp_simple_email_templates_editor_edit_email_templates', 'wp_simple_email_templates_editor_welcome_email_body', ['default' => "Hello {user_login},\n\nThank you for registering to {site_title}.\nWe added your account to {site_title}\nYour username of this site is \"{user_login}\" and your registered E-mail address is \"{user_email}\".\nYou can login to your account using above username and configured password via the following URL.\n{login_url}\n\nBest regards,\n-- \n{site_title} admin team\n"]);
-	register_setting('wp_simple_email_templates_editor_edit_email_templates', 'wp_simple_email_templates_editor_reset_password_email_subject', ['default' => '[{site_title}] Password Reset Requested for {user_login}']);
-	register_setting('wp_simple_email_templates_editor_edit_email_templates', 'wp_simple_email_templates_editor_reset_password_email_body', ['default' => "Hello {user_login},\n\nSomeone requested that the password is reset for your account \"{user_login}\".\nIf this was a mistake, just ignore this email and nothing will happen.\nTo reset your password, visit the following URL.\n{resetpass_url}\nThis password reset request originated from the IP address \"{user_ip}\".\nBest regards,\n-- \n{site_title} admin team\n"]);
+	register_setting('wp_simple_email_templates_editor_edit_email_templates', 'wp_simple_email_templates_editor_welcome_email_subject');
+	register_setting('wp_simple_email_templates_editor_edit_email_templates', 'wp_simple_email_templates_editor_welcome_email_body');
+	register_setting('wp_simple_email_templates_editor_edit_email_templates', 'wp_simple_email_templates_editor_reset_password_email_subject');
+	register_setting('wp_simple_email_templates_editor_edit_email_templates', 'wp_simple_email_templates_editor_reset_password_email_body');
+	if (get_option('wp_simple_email_templates_editor_welcome_email_subject') == false) {
+		update_option('wp_simple_email_templates_editor_welcome_email_subject', '[{site_title}] Welcome {user_login}');
+	}
+	if (get_option('wp_simple_email_templates_editor_welcome_email_body') == false) {
+		update_option('wp_simple_email_templates_editor_welcome_email_body', "Hello {user_login},\n\nThank you for registering to {site_title}.\nWe added your account to {site_title}\nYour username of this site is \"{user_login}\" and your registered E-mail address is \"{user_email}\".\nYou can login to your account using above username and configured password via the following URL.\n{login_url}\n\nBest regards,\n-- \n{site_title} admin team\n");
+	}
+	if (get_option('wp_simple_email_templates_editor_reset_password_email_subject') == false) {
+		update_option('wp_simple_email_templates_editor_reset_password_email_subject', '[{site_title}] Password Reset Requested for {user_login}');
+	}
+	if (get_option('wp_simple_email_templates_editor_reset_password_email_body') == false) {
+		update_option('wp_simple_email_templates_editor_reset_password_email_body', "Hello {user_login},\n\nSomeone requested that the password is reset for your account \"{user_login}\".\nIf this was a mistake, just ignore this email and nothing will happen.\nTo reset your password, visit the following URL.\n{resetpass_url}\nThis password reset request originated from the IP address \"{user_ip}\".\nBest regards,\n-- \n{site_title} admin team\n");
+	}
 	add_settings_section(
 		'wp_simple_email_templates_editor_email_section',
 		'Email Templates',

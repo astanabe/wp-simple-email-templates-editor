@@ -56,10 +56,10 @@ function wp_simple_email_templates_editor_edit_email_templates_page_screen() {
 
 // Register settings
 function wp_simple_email_templates_editor_register_edit_email_templates() {
-	register_setting('wp_simple_email_templates_editor_edit_email_templates', 'wp_simple_email_templates_editor_welcome_email_subject');
-	register_setting('wp_simple_email_templates_editor_edit_email_templates', 'wp_simple_email_templates_editor_welcome_email_body');
-	register_setting('wp_simple_email_templates_editor_edit_email_templates', 'wp_simple_email_templates_editor_reset_password_email_subject');
-	register_setting('wp_simple_email_templates_editor_edit_email_templates', 'wp_simple_email_templates_editor_reset_password_email_body');
+	register_setting('wp_simple_email_templates_editor_edit_email_templates', 'wp_simple_email_templates_editor_welcome_email_subject', ['default' => '[{site_title}] Welcome {user_login}']);
+	register_setting('wp_simple_email_templates_editor_edit_email_templates', 'wp_simple_email_templates_editor_welcome_email_body', ['default' => "Hello {user_login},\n\nThank you for registering to {site_title}.\nWe added your account to {site_title}\nYour username of this site is \"{user_login}\" and your registered E-mail address is \"{user_email}\".\nYou can login to your account using above username and configured password via the following URL.\n{login_url}\n\nBest regards,\n-- \n{site_title} admin team\n"]);
+	register_setting('wp_simple_email_templates_editor_edit_email_templates', 'wp_simple_email_templates_editor_reset_password_email_subject', ['default' => '[{site_title}] Password Reset Requested for {user_login}']);
+	register_setting('wp_simple_email_templates_editor_edit_email_templates', 'wp_simple_email_templates_editor_reset_password_email_body', ['default' => "Hello {user_login},\n\nSomeone requested that the password is reset for your account \"{user_login}\".\nIf this was a mistake, just ignore this email and nothing will happen.\nTo reset your password, visit the following URL.\n{resetpass_url}\nThis password reset request originated from the IP address \"{user_ip}\".\nBest regards,\n-- \n{site_title} admin team\n"]);
 	add_settings_section(
 		'wp_simple_email_templates_editor_email_section',
 		'Email Templates',
@@ -122,13 +122,13 @@ function wp_simple_email_templates_editor_replace_welcome_email($user_id) {
 		$profile_url = bp_members_get_user_url($user_id);
 	}
 	$site_title = get_bloginfo('name');
-	$subject = get_option('wp_simple_email_templates_editor_welcome_email_subject', '[{site_title}] Welcome {user_login}!');
+	$subject = get_option('wp_simple_email_templates_editor_welcome_email_subject', '[{site_title}] Welcome {user_login}');
 	$subject = str_replace(
 		['{user_login}', '{site_title}'],
 		[$user->user_login, $site_title],
 		$subject
 	);
-	$body = get_option('wp_simple_email_templates_editor_welcome_email_body', "Hi {user_login},\n\nThank you for registering!\n\nRegards,\n{site_title}");
+	$body = get_option('wp_simple_email_templates_editor_welcome_email_body', "Hello {user_login},\n\nThank you for registering to {site_title}.\nWe added your account to {site_title}\nYour username of this site is \"{user_login}\" and your registered E-mail address is \"{user_email}\".\nYou can login to your account using above username and configured password via the following URL.\n{login_url}\n\nBest regards,\n-- \n{site_title} admin team\n");
 	$body = str_replace(
 		['{user_login}', '{user_email}', '{login_url}', '{home_url}', '{site_title}'],
 		[$user->user_login, $user->user_email, $login_url, $home_url, $site_title],
@@ -158,7 +158,7 @@ function wp_simple_email_templates_editor_replace_reset_password_email_body($mes
 		$login_url
 	);
 	$user_ip = wp_simple_email_templates_editor_get_client_ip();
-	$body = get_option('wp_simple_email_templates_editor_reset_password_email_body', "Hi {user_login},\n\nClick the link below to reset your password:\n{resetpass_url}\n\nRegards,\n{site_title}");
+	$body = get_option('wp_simple_email_templates_editor_reset_password_email_body', "Hello {user_login},\n\nSomeone requested that the password is reset for your account \"{user_login}\".\nIf this was a mistake, just ignore this email and nothing will happen.\nTo reset your password, visit the following URL.\n{resetpass_url}\nThis password reset request originated from the IP address \"{user_ip}\".\nBest regards,\n-- \n{site_title} admin team\n");
 	$body = str_replace(
 		['{user_login}', '{user_email}', '{login_url}', '{home_url}', '{site_title}', '{resetpass_url}', '{user_ip}'],
 		[$user_login, $user_data->user_email, $login_url, $home_url, $site_title, $resetpass_url, $user_ip],
@@ -174,7 +174,7 @@ add_filter('retrieve_password_message', 'wp_simple_email_templates_editor_replac
 // Replace reset password email subject
 function wp_simple_email_templates_editor_replace_reset_password_email_subject($title, $user_login, $user_data) {
 	$site_title = get_bloginfo('name');
-	$subject = get_option('wp_simple_email_templates_editor_reset_password_email_subject', '[{site_title}] Password Reset Requested');
+	$subject = get_option('wp_simple_email_templates_editor_reset_password_email_subject', '[{site_title}] Password Reset Requested for {user_login}');
 	$subject = str_replace(
 		['{user_login}', '{site_title}'],
 		[$user_login, $site_title],

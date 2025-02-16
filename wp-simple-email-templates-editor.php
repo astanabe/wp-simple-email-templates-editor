@@ -124,14 +124,14 @@ function wp_simple_email_templates_editor_replace_welcome_email($user_id) {
 	$site_title = get_bloginfo('name');
 	$subject = get_option('wp_simple_email_templates_editor_welcome_email_subject', '[{site_title}] Welcome {user_login}!');
 	$subject = str_replace(
-		array('{user_login}', '{site_title}'),
-		array($user->user_login, $site_title),
+		['{user_login}', '{site_title}'],
+		[$user->user_login, $site_title],
 		$subject
 	);
 	$body = get_option('wp_simple_email_templates_editor_welcome_email_body', "Hi {user_login},\n\nThank you for registering!\n\nRegards,\n{site_title}");
 	$body = str_replace(
-		array('{user_login}', '{user_email}', '{login_url}', '{home_url}', '{site_title}'),
-		array($user->user_login, $user->user_email, $login_url, $home_url, $site_title),
+		['{user_login}', '{user_email}', '{login_url}', '{home_url}', '{site_title}'],
+		[$user->user_login, $user->user_email, $login_url, $home_url, $site_title],
 		$body
 	);
 	if (isset($profile_url)) {
@@ -150,18 +150,18 @@ function wp_simple_email_templates_editor_replace_reset_password_email_body($mes
 	}
 	$site_title = get_bloginfo('name');
 	$resetpass_url = add_query_arg(
-		array(
+		[
 		'action' => 'rp',
 		'key'    => $key,
 		'login'  => rawurlencode($user_login),
-		),
+		],
 		$login_url
 	);
 	$user_ip = wp_simple_email_templates_editor_get_client_ip();
 	$body = get_option('wp_simple_email_templates_editor_reset_password_email_body', "Hi {user_login},\n\nClick the link below to reset your password:\n{resetpass_url}\n\nRegards,\n{site_title}");
 	$body = str_replace(
-		array('{user_login}', '{user_email}', '{login_url}', '{home_url}', '{site_title}', '{resetpass_url}', '{user_ip}'),
-		array($user_login, $user_data->user_email, $login_url, $home_url, $site_title, $resetpass_url, $user_ip),
+		['{user_login}', '{user_email}', '{login_url}', '{home_url}', '{site_title}', '{resetpass_url}', '{user_ip}'],
+		[$user_login, $user_data->user_email, $login_url, $home_url, $site_title, $resetpass_url, $user_ip],
 		$body
 	);
 	if (isset($profile_url)) {
@@ -176,8 +176,8 @@ function wp_simple_email_templates_editor_replace_reset_password_email_subject($
 	$site_title = get_bloginfo('name');
 	$subject = get_option('wp_simple_email_templates_editor_reset_password_email_subject', '[{site_title}] Password Reset Requested');
 	$subject = str_replace(
-		array('{user_login}', '{site_title}'),
-		array($user_login, $site_title),
+		['{user_login}', '{site_title}'],
+		[$user_login, $site_title],
 		$subject
 	);
 	return $subject;

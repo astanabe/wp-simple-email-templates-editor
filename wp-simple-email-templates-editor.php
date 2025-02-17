@@ -196,6 +196,26 @@ function wp_simple_email_templates_editor_replace_reset_password_email_subject($
 }
 add_filter('retrieve_password_title', 'wp_simple_email_templates_editor_replace_reset_password_email_subject', 10, 3);
 
+// Function to obtain client IP
+function wp_simple_email_templates_editor_get_client_ip() {
+	if (!empty($_SERVER['CF-Connecting-IP']) && filter_var($_SERVER['CF-Connecting-IP'], FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+		return sanitize_text_field($_SERVER['CF-Connecting-IP']);
+	}
+	if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+		$ip_list = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+		foreach ($ip_list as $ip) {
+			$ip = trim($ip);
+			if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+				return sanitize_text_field($ip);
+			}
+		}
+	}
+	if (!empty($_SERVER['REMOTE_ADDR']) && filter_var($_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+		return sanitize_text_field($_SERVER['REMOTE_ADDR']);
+	}
+	return 'UNKNOWN';
+}
+
 // Page for deactivation
 function wp_simple_email_templates_editor_deactivate_page() {
     if (!current_user_can('manage_options')) {

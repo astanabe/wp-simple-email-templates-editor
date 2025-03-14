@@ -24,7 +24,7 @@ if (!defined('ABSPATH')) {
 function wp_simple_email_templates_editor_plain_text_email() {
 	return 'text/plain';
 }
-add_filter( 'wp_mail_content_type', 'wp_simple_email_templates_editor_plain_text_email' );
+add_filter('wp_mail_content_type', 'wp_simple_email_templates_editor_plain_text_email');
 
 // Add "Edit Email Templates" submenu to "Settings" menu of dashboard
 function wp_simple_email_templates_editor_add_edit_email_templates_to_dashboard() {
@@ -64,13 +64,13 @@ function wp_simple_email_templates_editor_register_edit_email_templates() {
 		update_option('wp_simple_email_templates_editor_welcome_email_subject', '[{site_title}] Welcome {user_login}');
 	}
 	if (get_option('wp_simple_email_templates_editor_welcome_email_body') == false) {
-		update_option('wp_simple_email_templates_editor_welcome_email_body', "Hello {user_login},\n\nThank you for registering to {site_title}.\nWe added your account to {site_title}\nYour username of this site is \"{user_login}\" and your registered E-mail address is \"{user_email}\".\nYou can login to your account using above username and configured password via the following URL.\n{login_url}\n\nBest regards,\n-- \n{site_title} admin team");
+		update_option('wp_simple_email_templates_editor_welcome_email_body', "Hello {user_login},\n\nThank you for registering to {site_title}.\nWe added your account to {site_title}\nYour username of this site is \"{user_login}\" and your registered E-mail address is \"{user_email}\".\nYou can login to your account using above username and configured password via the following URL.\n{login_url}\n\nBest regards,\n-- \n{site_title} admin team\n");
 	}
 	if (get_option('wp_simple_email_templates_editor_reset_password_email_subject') == false) {
 		update_option('wp_simple_email_templates_editor_reset_password_email_subject', '[{site_title}] Password Reset Requested for {user_login}');
 	}
 	if (get_option('wp_simple_email_templates_editor_reset_password_email_body') == false) {
-		update_option('wp_simple_email_templates_editor_reset_password_email_body', "Hello {user_login},\n\nSomeone requested that the password is reset for your account \"{user_login}\".\nIf this was a mistake, just ignore this email and nothing will happen.\nTo reset your password, visit the following URL.\n{resetpass_url}\nThis password reset request originated from the IP address \"{user_ip}\".\n\nBest regards,\n-- \n{site_title} admin team");
+		update_option('wp_simple_email_templates_editor_reset_password_email_body', "Hello {user_login},\n\nSomeone requested that the password is reset for your account \"{user_login}\".\nIf this was a mistake, just ignore this email and nothing will happen.\nTo reset your password, visit the following URL.\n{resetpass_url}\nThis password reset request originated from the IP address \"{user_ip}\".\n\nBest regards,\n-- \n{site_title} admin team\n");
 	}
 	add_settings_section(
 		'wp_simple_email_templates_editor_email_section',
@@ -125,7 +125,24 @@ function wp_simple_email_templates_editor_render_textarea_input($args) {
 	echo '<textarea id="' . esc_attr($args['label_for']) . '" name="' . esc_attr($args['label_for']) . '" rows="5" class="large-text">' . esc_textarea($option) . '</textarea>';
 }
 
-// Replace welcome email
+// Disable "Login Details" email
+function wp_simple_email_templates_editor_disable_login_details_email($wp_new_user_notification_email, $user, $blogname) {
+	if (!is_admin()) {
+		$wp_new_user_notification_email['to'] = '';
+	}
+	return $wp_new_user_notification_email;
+}
+add_filter('wp_new_user_notification_email', 'wp_simple_email_templates_editor_disable_login_details_email', 10, 3);
+
+// Disable BuddyPress welcome email
+function wp_simple_email_templates_editor_disable_buddypress_welcome_email() {
+	if (function_exists('bp_send_welcome_email')) {
+		remove_action('bp_core_activated_user', 'bp_send_welcome_email', 10);
+	}
+}
+add_action('bp_loaded', 'wp_simple_email_templates_editor_disable_buddypress_welcome_email');
+
+// Add welcome email
 function wp_simple_email_templates_editor_replace_welcome_email($user_id) {
 	$user = get_userdata($user_id);
 	$login_url = wp_login_url();
@@ -140,7 +157,7 @@ function wp_simple_email_templates_editor_replace_welcome_email($user_id) {
 		[$user->user_login, $site_title],
 		$subject
 	);
-	$body = get_option('wp_simple_email_templates_editor_welcome_email_body', "Hello {user_login},\n\nThank you for registering to {site_title}.\nWe added your account to {site_title}\nYour username of this site is \"{user_login}\" and your registered E-mail address is \"{user_email}\".\nYou can login to your account using above username and configured password via the following URL.\n{login_url}\n\nBest regards,\n-- \n{site_title} admin team");
+	$body = get_option('wp_simple_email_templates_editor_welcome_email_body', "Hello {user_login},\n\nThank you for registering to {site_title}.\nWe added your account to {site_title}\nYour username of this site is \"{user_login}\" and your registered E-mail address is \"{user_email}\".\nYou can login to your account using above username and configured password via the following URL.\n{login_url}\n\nBest regards,\n-- \n{site_title} admin team\n");
 	$body = str_replace(
 		['{user_login}', '{user_email}', '{login_url}', '{home_url}', '{site_title}'],
 		[$user->user_login, $user->user_email, $login_url, $home_url, $site_title],
@@ -170,7 +187,7 @@ function wp_simple_email_templates_editor_replace_reset_password_email_body($mes
 		$login_url
 	);
 	$user_ip = wp_simple_email_templates_editor_get_client_ip();
-	$body = get_option('wp_simple_email_templates_editor_reset_password_email_body', "Hello {user_login},\n\nSomeone requested that the password is reset for your account \"{user_login}\".\nIf this was a mistake, just ignore this email and nothing will happen.\nTo reset your password, visit the following URL.\n{resetpass_url}\nThis password reset request originated from the IP address \"{user_ip}\".\n\nBest regards,\n-- \n{site_title} admin team");
+	$body = get_option('wp_simple_email_templates_editor_reset_password_email_body', "Hello {user_login},\n\nSomeone requested that the password is reset for your account \"{user_login}\".\nIf this was a mistake, just ignore this email and nothing will happen.\nTo reset your password, visit the following URL.\n{resetpass_url}\nThis password reset request originated from the IP address \"{user_ip}\".\n\nBest regards,\n-- \n{site_title} admin team\n");
 	$body = str_replace(
 		['{user_login}', '{user_email}', '{login_url}', '{home_url}', '{site_title}', '{resetpass_url}', '{user_ip}'],
 		[$user_login, $user_data->user_email, $login_url, $home_url, $site_title, $resetpass_url, $user_ip],
@@ -218,9 +235,9 @@ function wp_simple_email_templates_editor_get_client_ip() {
 
 // Page for deactivation
 function wp_simple_email_templates_editor_deactivate_page() {
-    if (!current_user_can('manage_options')) {
-        return;
-    }
+	if (!current_user_can('manage_options')) {
+		return;
+	}
 	if (isset($_POST['wp_simple_email_templates_editor_deactivate_confirm']) && check_admin_referer('wp_simple_email_templates_editor_deactivate_confirm', 'wp_simple_email_templates_editor_deactivate_confirm_nonce')) {
 		if ($_POST['wp_simple_email_templates_editor_deactivate_confirm'] === 'remove') {
 			update_option('wp_simple_email_templates_editor_uninstall_settings', 'remove');
@@ -261,23 +278,23 @@ function wp_simple_email_templates_editor_deactivate_page() {
 
 // Intercept deactivation request and redirect to confirmation screen
 function wp_simple_email_templates_editor_deactivate_hook() {
-    if (isset($_GET['action']) && $_GET['action'] === 'deactivate' && isset($_GET['plugin']) && $_GET['plugin'] === plugin_basename(__FILE__)) {
-        wp_safe_redirect(admin_url('admin.php?page=wp-simple-email-templates-editor-deactivate'));
-        exit;
-    }
+	if (isset($_GET['action']) && $_GET['action'] === 'deactivate' && isset($_GET['plugin']) && $_GET['plugin'] === plugin_basename(__FILE__)) {
+		wp_safe_redirect(admin_url('admin.php?page=wp-simple-email-templates-editor-deactivate'));
+		exit;
+	}
 }
 add_action('admin_init', 'wp_simple_email_templates_editor_deactivate_hook');
 
 // Add deactivation confirmation page to the admin menu
 function wp_simple_email_templates_editor_add_deactivate_page() {
-    add_submenu_page(
-        null, // No parent menu, hidden page
-        'Deactivate Simple Email Templates Editor Plugin',
-        'Deactivate Simple Email Templates Editor Plugin',
-        'manage_options',
-        'wp-simple-email-templates-editor-deactivate',
-        'wp_simple_email_templates_editor_deactivate_page'
-    );
+	add_submenu_page(
+		null, // No parent menu, hidden page
+		'Deactivate Simple Email Templates Editor Plugin',
+		'Deactivate Simple Email Templates Editor Plugin',
+		'manage_options',
+		'wp-simple-email-templates-editor-deactivate',
+		'wp_simple_email_templates_editor_deactivate_page'
+	);
 }
 add_action('admin_menu', 'wp_simple_email_templates_editor_add_deactivate_page');
 

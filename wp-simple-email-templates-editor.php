@@ -127,9 +127,7 @@ function wp_simple_email_templates_editor_render_textarea_input($args) {
 
 // Disable "Login Details" email
 function wp_simple_email_templates_editor_disable_login_details_email($wp_new_user_notification_email, $user, $blogname) {
-	if (!is_admin()) {
-		$wp_new_user_notification_email['to'] = '';
-	}
+	$wp_new_user_notification_email['to'] = '';
 	return $wp_new_user_notification_email;
 }
 add_filter('wp_new_user_notification_email', 'wp_simple_email_templates_editor_disable_login_details_email', 10, 3);

@@ -153,16 +153,16 @@ function wp_simple_email_templates_editor_replace_welcome_email($user_id) {
 	$subject = str_replace(
 		['{user_login}', '{site_title}'],
 		[$user->user_login, $site_title],
-		$subject
+		(string) ($subject ?? '')
 	);
 	$body = get_option('wp_simple_email_templates_editor_welcome_email_body', "Hello {user_login},\n\nThank you for registering to {site_title}.\nWe added your account to {site_title}\nYour username of this site is \"{user_login}\" and your registered E-mail address is \"{user_email}\".\nYou can login to your account using above username and configured password via the following URL.\n{login_url}\n\nBest regards,\n-- \n{site_title} admin team\n");
 	$body = str_replace(
 		['{user_login}', '{user_email}', '{login_url}', '{home_url}', '{site_title}'],
 		[$user->user_login, $user->user_email, $login_url, $home_url, $site_title],
-		$body
+		(string) ($body ?? '')
 	);
 	if (isset($profile_url)) {
-		$body = str_replace('{profile_url}', $profile_url, $body);
+		$body = str_replace('{profile_url}', $profile_url, (string) ($body ?? ''));
 	}
 	wp_mail($user->user_email, $subject, $body);
 }
@@ -189,10 +189,10 @@ function wp_simple_email_templates_editor_replace_reset_password_email_body($mes
 	$body = str_replace(
 		['{user_login}', '{user_email}', '{login_url}', '{home_url}', '{site_title}', '{resetpass_url}', '{user_ip}'],
 		[$user_login, $user_data->user_email, $login_url, $home_url, $site_title, $resetpass_url, $user_ip],
-		$body
+		(string) ($body ?? '')
 	);
 	if (isset($profile_url)) {
-		$body = str_replace('{profile_url}', $profile_url, $body);
+		$body = str_replace('{profile_url}', $profile_url, (string) ($body ?? ''));
 	}
 	return $body;
 }
@@ -205,7 +205,7 @@ function wp_simple_email_templates_editor_replace_reset_password_email_subject($
 	$subject = str_replace(
 		['{user_login}', '{site_title}'],
 		[$user_login, $site_title],
-		$subject
+		(string) ($subject ?? '')
 	);
 	return $subject;
 }
